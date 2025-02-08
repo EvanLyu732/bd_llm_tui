@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_build:
+	cargo build --release
+
+override_dh_auto_install:
+	mkdir -p debian/bd-llm-tui/usr/bin
+	cp target/release/llm_tui debian/bd-llm-tui/usr/bin/bd-llm-tui 

@@ -1,0 +1,13 @@
+Source: bd-llm-tui
+Section: utils
+Priority: optional
+Maintainer: Your Name <your.email@example.com>
+Build-Depends: debhelper (>= 9), cargo, rustc
+
+Package: bd-llm-tui
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Terminal User Interface for LLM Chat
+ A TUI application for interacting with LLM chat models.
+ Supports multiple models and provides a clean interface
+ for chat interactions. 
