@@ -1,0 +1,54 @@
+image: rust:latest
+
+variables:
+  CARGO_HOME: $CI_PROJECT_DIR/.cargo
+  DEBIAN_FRONTEND: noninteractive
+
+stages:
+  - test
+  - build
+  - package
+  - release
+
+cache:
+  paths:
+    - .cargo
+    - target/
+
+test:
+  stage: test
+  script:
+    - cargo test
+
+build:
+  stage: build
+  script:
+    - cargo build --release
+  artifacts:
+    paths:
+      - target/release/llm_tui
+
+package:
+  stage: package
+  before_script:
+    - apt-get update
+    - apt-get install -y debhelper
+  script:
+    - mkdir -p debian/bd-llm-tui/usr/bin
+    - cp target/release/llm_tui debian/bd-llm-tui/usr/bin/bd-llm-tui
+    - dpkg-buildpackage -us -uc
+    - mv ../bd-llm-tui_*.deb .
+  artifacts:
+    paths:
+      - "*.deb"
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - |
+      release-cli create --name "Release $CI_COMMIT_TAG" \
+        --tag-name $CI_COMMIT_TAG \
+        --assets-link "{\"name\":\"bd-llm-tui_${CI_COMMIT_TAG#v}_amd64.deb\",\"url\":\"${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/bd-llm-tui_${CI_COMMIT_TAG#v}_amd64.deb?job=package\"}" 

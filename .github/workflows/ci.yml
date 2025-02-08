@@ -1,0 +1,96 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Run tests
+      run: cargo test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build
+      run: cargo build --release
+    
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: bd-llm-tui
+        path: target/release/llm_tui
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: bd-llm-tui
+        path: target/release/
+    
+    - name: Make binary executable
+      run: chmod +x target/release/llm_tui
+    
+    - name: Install packaging dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y debhelper
+    
+    - name: Create Debian package
+      run: |
+        mkdir -p debian/bd-llm-tui/usr/bin
+        cp target/release/llm_tui debian/bd-llm-tui/usr/bin/bd-llm-tui
+        dpkg-buildpackage -us -uc
+        mv ../bd-llm-tui_*.deb .
+    
+    - name: Upload Debian package
+      uses: actions/upload-artifact@v3
+      with:
+        name: debian-package
+        path: bd-llm-tui_*.deb
+
+  release:
+    needs: package
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+    - name: Download Debian package
+      uses: actions/download-artifact@v3
+      with:
+        name: debian-package
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: bd-llm-tui_*.deb
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
