@@ -62,7 +62,15 @@ jobs:
     - name: Install packaging dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y debhelper
+        sudo apt-get install -y debhelper build-essential cargo rustc
+    
+    - name: Fix changelog format
+      run: |
+        CURRENT_DATE=$(date -R)
+        sed -i "s/\$(date -R)/$CURRENT_DATE/" debian/changelog
+    
+    - name: Make debian/rules executable
+      run: chmod +x debian/rules
     
     - name: Create Debian package
       run: |
