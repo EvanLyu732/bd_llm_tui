@@ -15,7 +15,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Cache cargo registry
       uses: actions/cache@v3
@@ -33,13 +33,13 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Build
       run: cargo build --release
     
     - name: Upload build artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: bd-llm-tui
         path: target/release/llm_tui
@@ -48,10 +48,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Download build artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: bd-llm-tui
         path: target/release/
@@ -72,7 +72,7 @@ jobs:
         mv ../bd-llm-tui_*.deb .
     
     - name: Upload Debian package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: debian-package
         path: bd-llm-tui_*.deb
@@ -83,7 +83,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
     - name: Download Debian package
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: debian-package
     
