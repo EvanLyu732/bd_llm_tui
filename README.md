@@ -2,6 +2,8 @@
 
 一个用于百度千帆大语言模型的终端用户界面（TUI）应用程序。
 
+![bd_llm_tui demo](https://raw.githubusercontent.com/EvanLyu732/evanlyu732.github.io/refs/heads/main/static/images/tui.gif)
+
 ## 功能特点
 
 - 清爽的终端界面
